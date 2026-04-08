@@ -1,0 +1,191 @@
+:root {
+  --bg:           #1b1f17;
+  --surface:      #242920;
+  --surface-light: #2e3528;
+  --surface-hover: #353d2f;
+  --primary:      #7a9e7e;
+  --primary-dim:  #5a7e5e;
+  --accent:       #d4a843;
+  --accent-dim:   #b08830;
+  --text:         #e8e4dc;
+  --text-dim:     #9a9689;
+  --text-muted:   #6b6760;
+  --danger:       #c0392b;
+  --danger-dim:   #962d22;
+  --success:      #27ae60;
+  --success-dim:  #1e8a4a;
+  --warning:      #e67e22;
+  --border:       #3a3f35;
+
+  --radius-sm:    6px;
+  --radius:       12px;
+  --radius-lg:    20px;
+  --radius-full:  9999px;
+
+  --shadow-sm:    0 1px 3px rgba(0,0,0,0.4);
+  --shadow:       0 4px 12px rgba(0,0,0,0.5);
+  --shadow-lg:    0 8px 24px rgba(0,0,0,0.6);
+
+  --font:         'DM Sans', system-ui, sans-serif;
+  --safe-top:     env(safe-area-inset-top, 0px);
+  --safe-bottom:  env(safe-area-inset-bottom, 0px);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100dvh;
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+button {
+  font-family: var(--font);
+  font-size: 1rem;
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+input, textarea, select {
+  font-family: var(--font);
+  font-size: 16px; /* prevents iOS zoom */
+  color: var(--text);
+  background: var(--surface-light);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  width: 100%;
+  outline: none;
+}
+
+input:focus, textarea:focus {
+  border-color: var(--primary);
+}
+
+a {
+  color: var(--primary);
+  text-decoration: none;
+}
+
+#root {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100dvh;
+  position: relative;
+}
+
+/* Utility classes */
+.btn-primary {
+  background: var(--primary);
+  color: #fff;
+  padding: 14px 24px;
+  border-radius: var(--radius-full);
+  font-weight: 600;
+  font-size: 1rem;
+  width: 100%;
+  transition: background 0.2s, transform 0.1s;
+}
+.btn-primary:active { transform: scale(0.98); }
+.btn-primary:disabled { background: var(--surface-light); color: var(--text-muted); }
+
+.btn-secondary {
+  background: var(--surface-light);
+  color: var(--text);
+  padding: 14px 24px;
+  border-radius: var(--radius-full);
+  font-weight: 500;
+  font-size: 1rem;
+  width: 100%;
+  border: 1px solid var(--border);
+  transition: background 0.2s;
+}
+.btn-secondary:active { background: var(--surface-hover); }
+
+.btn-accent {
+  background: var(--accent);
+  color: #1b1f17;
+  padding: 14px 24px;
+  border-radius: var(--radius-full);
+  font-weight: 700;
+  font-size: 1rem;
+  width: 100%;
+  transition: background 0.2s, transform 0.1s;
+}
+.btn-accent:active { transform: scale(0.98); }
+
+.card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 16px;
+  border: 1px solid var(--border);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.badge-green  { background: rgba(122,158,126,0.2); color: var(--primary); }
+.badge-gold   { background: rgba(212,168,67,0.2);  color: var(--accent);  }
+.badge-red    { background: rgba(192,57,43,0.2);   color: var(--danger);  }
+.badge-dim    { background: var(--surface-light);  color: var(--text-dim); }
+
+.sheet-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 50;
+  display: flex;
+  align-items: flex-end;
+}
+
+.sheet {
+  background: var(--surface);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  padding: 24px 20px calc(24px + var(--safe-bottom));
+  width: 100%;
+  max-height: 90dvh;
+  overflow-y: auto;
+}
+
+.sheet-handle {
+  width: 40px;
+  height: 4px;
+  background: var(--border);
+  border-radius: var(--radius-full);
+  margin: 0 auto 20px;
+}
+
+.divider {
+  height: 1px;
+  background: var(--border);
+  margin: 16px 0;
+}
+
+.text-sm    { font-size: 0.875rem; }
+.text-xs    { font-size: 0.75rem; }
+.text-dim   { color: var(--text-dim); }
+.text-muted { color: var(--text-muted); }
+.text-gold  { color: var(--accent); }
+.text-green { color: var(--primary); }
+.text-red   { color: var(--danger); }
+.font-bold  { font-weight: 700; }
+.font-semi  { font-weight: 600; }
