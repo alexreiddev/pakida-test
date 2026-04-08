@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 
 // ── Billing helpers ─────────────────────────────────────────────────────────
@@ -229,8 +229,12 @@ export function useSession(tableId) {
 
     // If last player left, move session to billing (staff must finalize)
     if (remainingCount === 0) {
+      const { data: sess } = await supabase
+        .from('sessions').select('table_id').eq('id', sessionId).single()
       await supabase.from('sessions').update({ status: 'billing' }).eq('id', sessionId)
-      await supabase.from('tables').update({ status: 'available' }).eq('id', sp.session.table_id)
+      if (sess?.table_id) {
+        await supabase.from('tables').update({ status: 'available' }).eq('id', sess.table_id)
+      }
     }
 
     // Award stamp if earned

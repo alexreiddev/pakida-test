@@ -35,6 +35,26 @@ export default function App() {
     if (table) setSelectedTableId(parseInt(table))
   }, [])
 
+  // Restore active session on page refresh / return
+  useEffect(() => {
+    if (!player || activeSessionId) return
+    supabase
+      .from('session_players')
+      .select('session_id, sessions(id, table_id, status, start_time, session_players(*, players(*)))')
+      .eq('player_id', player.id)
+      .is('left_at', null)
+      .single()
+      .then(({ data }) => {
+        const sess = data?.sessions
+        if (sess && sess.status === 'active') {
+          setSelectedTableId(sess.table_id)
+          setActiveSessionId(sess.id)
+          setSessionPlayers(sess.session_players || [])
+          setPage('session')
+        }
+      })
+  }, [player])
+
   // Listen for staff-login navigation event from PhoneEntryPage
   useEffect(() => {
     const handler = (e) => {
