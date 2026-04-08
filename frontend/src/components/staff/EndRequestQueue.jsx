@@ -1,8 +1,6 @@
-import { usePendingEndRequests } from '../../hooks/useEndRequest'
-
-export default function EndRequestQueue({ staffName }) {
-  const { requests, resolveRequest } = usePendingEndRequests()
-
+// Props-driven: receives requests + resolveRequest from StaffPortal
+// (avoids duplicate Supabase channel with the parent's usePendingEndRequests call)
+export default function EndRequestQueue({ staffName, requests, resolveRequest }) {
   if (!requests.length) {
     return (
       <div style={{ padding: '32px 0', textAlign: 'center' }}>

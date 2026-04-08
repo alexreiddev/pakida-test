@@ -122,7 +122,7 @@ export default function StaffPortal({ config, configLoading, onBack }) {
   const [authed,    setAuthed]    = useState(false)
   const [staffName, setStaffName] = useState('')
   const [tab,       setTab]       = useState('requests')
-  const { requests } = usePendingEndRequests()
+  const { requests, resolveRequest } = usePendingEndRequests()
 
   function handleLogin(name, pin, callback) {
     const correctPin = config?.staff_pin || '1234'
@@ -197,7 +197,13 @@ export default function StaffPortal({ config, configLoading, onBack }) {
 
       {/* Content */}
       <div style={{ padding: '16px 20px', paddingBottom: `calc(16px + var(--safe-bottom))` }}>
-        {tab === 'requests' && <EndRequestQueue staffName={staffName} />}
+        {tab === 'requests' && (
+          <EndRequestQueue
+            staffName={staffName}
+            requests={requests}
+            resolveRequest={resolveRequest}
+          />
+        )}
         {tab === 'orders'   && <OrderQueue />}
         {tab === 'tables'   && <LiveTablesView />}
       </div>
