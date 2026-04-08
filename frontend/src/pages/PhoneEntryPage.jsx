@@ -55,16 +55,24 @@ export default function PhoneEntryPage({ onFound, onNew }) {
         </button>
       </form>
 
-      <p style={{ marginTop: 32, textAlign: 'center', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+      <p style={{ marginTop: 20, textAlign: 'center', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
         By continuing you agree to our house rules.
-        <br />Staff access via{' '}
-        <button
-          style={{ background: 'none', border: 'none', color: 'var(--text-dim)', textDecoration: 'underline', cursor: 'pointer', fontSize: '0.8rem' }}
-          onClick={() => window.dispatchEvent(new CustomEvent('goto', { detail: 'staff-login' }))}
-        >
-          Staff Login
-        </button>
       </p>
+
+      <div style={{ marginTop: 'auto', paddingTop: 32 }}>
+        <button
+          onClick={() => window.dispatchEvent(new CustomEvent('goto', { detail: 'staff-login' }))}
+          style={{
+            width: '100%', padding: '12px',
+            background: 'var(--surface)', border: '1px solid var(--border)',
+            borderRadius: 'var(--radius)', cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+            color: 'var(--text-dim)', fontSize: '0.9rem', fontWeight: 500,
+          }}
+        >
+          🔒 Staff Login
+        </button>
+      </div>
     </div>
   )
 }

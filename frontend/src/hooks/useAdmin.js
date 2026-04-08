@@ -132,16 +132,19 @@ export function useAllSessions(date) {
 }
 
 export function useAppConfig() {
-  const [config, setConfig] = useState(null)
+  const [config,  setConfig]  = useState(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => { fetchConfig() }, [])
 
   async function fetchConfig() {
+    setLoading(true)
     const { data } = await supabase
       .from('app_config')
       .select('*')
       .single()
     setConfig(data)
+    setLoading(false)
   }
 
   async function updateConfig(updates) {
@@ -154,5 +157,5 @@ export function useAppConfig() {
     setConfig(data)
   }
 
-  return { config, updateConfig, refresh: fetchConfig }
+  return { config, loading, updateConfig, refresh: fetchConfig }
 }

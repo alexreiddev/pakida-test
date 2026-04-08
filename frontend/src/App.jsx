@@ -16,7 +16,7 @@ import StaffPortal     from './pages/StaffPortal'
 
 export default function App() {
   const { player, loading: playerLoading, lookupByPhone, register, refreshPlayer, logout } = usePlayer()
-  const { config } = useAppConfig()
+  const { config, loading: configLoading } = useAppConfig()
 
   // Page routing
   const [page,     setPage]     = useState('home')
@@ -159,7 +159,7 @@ export default function App() {
 
   // Staff portal
   if (page === 'staff') {
-    return <StaffPortal config={config} onBack={() => setPage('home')} />
+    return <StaffPortal config={config} configLoading={configLoading} onBack={() => setPage('home')} />
   }
 
   // Not logged in
