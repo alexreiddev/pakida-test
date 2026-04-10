@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quick Repo Creator</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0d1117;
+      color: #e6edf3;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 480px;
+      padding: 40px;
+    }
+
+    .logo {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .logo svg {
+      width: 48px;
+      height: 48px;
+      fill: #e6edf3;
+      margin-bottom: 12px;
+    }
+
+    .logo h1 {
+      font-size: 24px;
+      font-weight: 600;
+    }
+
+    .logo p {
+      color: #8b949e;
+      font-size: 14px;
+      margin-top: 4px;
+    }
+
+    .card {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 12px;
+      padding: 28px;
+    }
+
+    .field {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 8px;
+      color: #e6edf3;
+    }
+
+    input[type="text"], input[type="password"] {
+      width: 100%;
+      padding: 10px 14px;
+      font-size: 15px;
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      color: #e6edf3;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input:focus {
+      border-color: #58a6ff;
+      box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
+    }
+
+    .name-input-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .owner-prefix {
+      font-size: 15px;
+      color: #8b949e;
+      white-space: nowrap;
+      padding: 10px 0;
+    }
+
+    .owner-prefix strong {
+      color: #e6edf3;
+    }
+
+    .name-input-row input {
+      flex: 1;
+    }
+
+    .status {
+      font-size: 13px;
+      margin-top: 8px;
+      min-height: 20px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status.available { color: #3fb950; }
+    .status.taken { color: #f85149; }
+    .status.checking { color: #8b949e; }
+    .status.idle { color: #8b949e; }
+
+    .options {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .option-btn {
+      flex: 1;
+      padding: 10px;
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      color: #8b949e;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+    }
+
+    .option-btn.active {
+      border-color: #58a6ff;
+      color: #58a6ff;
+      background: rgba(88, 166, 255, 0.08);
+    }
+
+    .option-btn:hover:not(.active) {
+      border-color: #8b949e;
+      color: #e6edf3;
+    }
+
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+      font-size: 14px;
+      color: #8b949e;
+    }
+
+    .checkbox-row input[type="checkbox"] {
+      accent-color: #58a6ff;
+      width: 16px;
+      height: 16px;
+    }
+
+    .btn-create {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      background: #238636;
+      color: #fff;
+      border: 1px solid rgba(240, 246, 252, 0.1);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-create:hover:not(:disabled) {
+      background: #2ea043;
+    }
+
+    .btn-create:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-create.loading {
+      position: relative;
+      color: transparent;
+    }
+
+    .btn-create.loading::after {
+      content: '';
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      top: 50%;
+      left: 50%;
+      margin: -10px 0 0 -10px;
+      border: 2px solid transparent;
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .result {
+      margin-top: 16px;
+      padding: 14px;
+      border-radius: 8px;
+      font-size: 14px;
+      display: none;
+    }
+
+    .result.success {
+      display: block;
+      background: rgba(63, 185, 80, 0.1);
+      border: 1px solid rgba(63, 185, 80, 0.3);
+      color: #3fb950;
+    }
+
+    .result.error {
+      display: block;
+      background: rgba(248, 81, 73, 0.1);
+      border: 1px solid rgba(248, 81, 73, 0.3);
+      color: #f85149;
+    }
+
+    .result a {
+      color: #58a6ff;
+      text-decoration: none;
+    }
+
+    .result a:hover { text-decoration: underline; }
+
+    .setup-section {
+      margin-bottom: 20px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #30363d;
+    }
+
+    .token-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .token-row input { flex: 1; }
+
+    .btn-save {
+      padding: 10px 16px;
+      font-size: 14px;
+      font-weight: 500;
+      background: #21262d;
+      color: #e6edf3;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.2s;
+    }
+
+    .btn-save:hover { background: #30363d; }
+
+    .token-status {
+      font-size: 13px;
+      margin-top: 8px;
+      color: #8b949e;
+    }
+
+    .token-status.connected { color: #3fb950; }
+
+    .token-help {
+      font-size: 12px;
+      color: #8b949e;
+      margin-top: 6px;
+      line-height: 1.5;
+    }
+
+    .token-help a {
+      color: #58a6ff;
+      text-decoration: none;
+    }
+
+    .token-help a:hover { text-decoration: underline; }
+
+    .btn-disconnect {
+      background: none;
+      border: none;
+      color: #f85149;
+      font-size: 12px;
+      cursor: pointer;
+      padding: 0;
+      margin-left: 8px;
+    }
+
+    .btn-disconnect:hover { text-decoration: underline; }
+
+    .history {
+      margin-top: 24px;
+    }
+
+    .history h3 {
+      font-size: 13px;
+      color: #8b949e;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 10px;
+    }
+
+    .history-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid #21262d;
+      font-size: 14px;
+    }
+
+    .history-item a {
+      color: #58a6ff;
+      text-decoration: none;
+    }
+
+    .history-item a:hover { text-decoration: underline; }
+
+    .history-item .time {
+      color: #8b949e;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">
+      <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+        <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+      </svg>
+      <h1>Quick Repo Creator</h1>
+      <p>Create GitHub repositories in one click</p>
+    </div>
+
+    <div class="card">
+      <!-- Token Setup -->
+      <div class="setup-section" id="tokenSection">
+        <label>GitHub Personal Access Token</label>
+        <div id="tokenInput">
+          <div class="token-row">
+            <input type="password" id="token" placeholder="ghp_xxxxxxxxxxxx">
+            <button class="btn-save" onclick="saveToken()">Connect</button>
+          </div>
+          <p class="token-help">
+            Create a token at
+            <a href="https://github.com/settings/tokens/new?scopes=repo&description=Quick+Repo+Creator" target="_blank">
+              GitHub Settings &rarr; Tokens
+            </a>
+            with <strong>repo</strong> scope.
+          </p>
+        </div>
+        <div id="tokenConnected" style="display:none">
+          <p class="token-status connected">
+            Connected as <strong id="username"></strong>
+            <button class="btn-disconnect" onclick="disconnect()">Disconnect</button>
+          </p>
+        </div>
+      </div>
+
+      <!-- Repo Name -->
+      <div class="field">
+        <label>Repository name</label>
+        <div class="name-input-row">
+          <span class="owner-prefix"><strong id="ownerName">you</strong> /</span>
+          <input type="text" id="repoName" placeholder="my-new-repo" oninput="onNameInput()" autofocus>
+        </div>
+        <div class="status idle" id="nameStatus">Type a name to check availability</div>
+      </div>
+
+      <!-- Visibility -->
+      <div class="field">
+        <label>Visibility</label>
+        <div class="options">
+          <button class="option-btn active" id="btnPublic" onclick="setVisibility(false)">Public</button>
+          <button class="option-btn" id="btnPrivate" onclick="setVisibility(true)">Private</button>
+        </div>
+      </div>
+
+      <!-- Init with README -->
+      <div class="checkbox-row">
+        <input type="checkbox" id="addReadme" checked>
+        <label for="addReadme" style="margin:0; cursor:pointer;">Initialize with a README</label>
+      </div>
+
+      <!-- Create Button -->
+      <button class="btn-create" id="btnCreate" onclick="createRepo()" disabled>Create Repository</button>
+
+      <!-- Result -->
+      <div class="result" id="result"></div>
+    </div>
+
+    <!-- History -->
+    <div class="history" id="historySection" style="display:none">
+      <h3>Recently Created</h3>
+      <div id="historyList"></div>
+    </div>
+  </div>
+
+  <script>
+    let isPrivate = false;
+    let nameAvailable = false;
+    let checkTimeout = null;
+    let currentUser = null;
+
+    // Init
+    (function init() {
+      const stored = localStorage.getItem('gh_token');
+      if (stored) {
+        verifyToken(stored);
+      }
+      renderHistory();
+    })();
+
+    function getHeaders() {
+      const token = localStorage.getItem('gh_token');
+      return {
+        'Authorization': `token ${token}`,
+        'Accept': 'application/vnd.github.v3+json',
+        'Content-Type': 'application/json'
+      };
+    }
+
+    async function saveToken() {
+      const token = document.getElementById('token').value.trim();
+      if (!token) return;
+      localStorage.setItem('gh_token', token);
+      await verifyToken(token);
+    }
+
+    async function verifyToken(token) {
+      try {
+        const res = await fetch('https://api.github.com/user', {
+          headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' }
+        });
+        if (!res.ok) throw new Error('Invalid token');
+        const user = await res.json();
+        currentUser = user.login;
+        document.getElementById('username').textContent = user.login;
+        document.getElementById('ownerName').textContent = user.login;
+        document.getElementById('tokenInput').style.display = 'none';
+        document.getElementById('tokenConnected').style.display = 'block';
+        // Re-check name if there's already text
+        const name = document.getElementById('repoName').value.trim();
+        if (name) checkName(name);
+      } catch {
+        localStorage.removeItem('gh_token');
+        document.getElementById('tokenInput').style.display = 'block';
+        document.getElementById('tokenConnected').style.display = 'none';
+        currentUser = null;
+      }
+    }
+
+    function disconnect() {
+      localStorage.removeItem('gh_token');
+      document.getElementById('token').value = '';
+      document.getElementById('tokenInput').style.display = 'block';
+      document.getElementById('tokenConnected').style.display = 'none';
+      document.getElementById('ownerName').textContent = 'you';
+      currentUser = null;
+      nameAvailable = false;
+      updateCreateBtn();
+    }
+
+    function setVisibility(priv) {
+      isPrivate = priv;
+      document.getElementById('btnPublic').classList.toggle('active', !priv);
+      document.getElementById('btnPrivate').classList.toggle('active', priv);
+    }
+
+    function onNameInput() {
+      const name = document.getElementById('repoName').value.trim();
+      const status = document.getElementById('nameStatus');
+      nameAvailable = false;
+      updateCreateBtn();
+
+      if (checkTimeout) clearTimeout(checkTimeout);
+
+      if (!name) {
+        status.className = 'status idle';
+        status.textContent = 'Type a name to check availability';
+        return;
+      }
+
+      if (!/^[a-zA-Z0-9._-]+$/.test(name)) {
+        status.className = 'status taken';
+        status.textContent = 'Invalid name. Use letters, numbers, hyphens, dots, or underscores.';
+        return;
+      }
+
+      if (!currentUser) {
+        status.className = 'status idle';
+        status.textContent = 'Connect your GitHub token first';
+        return;
+      }
+
+      status.className = 'status checking';
+      status.textContent = 'Checking availability...';
+      checkTimeout = setTimeout(() => checkName(name), 400);
+    }
+
+    async function checkName(name) {
+      const status = document.getElementById('nameStatus');
+      try {
+        const res = await fetch(`https://api.github.com/repos/${currentUser}/${name}`, {
+          headers: getHeaders()
+        });
+        if (res.status === 404) {
+          nameAvailable = true;
+          status.className = 'status available';
+          status.innerHTML = '&#10003; Available';
+        } else if (res.ok) {
+          nameAvailable = false;
+          status.className = 'status taken';
+          status.innerHTML = '&#10007; Already exists';
+        } else {
+          nameAvailable = false;
+          status.className = 'status taken';
+          status.textContent = 'Could not verify';
+        }
+      } catch {
+        status.className = 'status taken';
+        status.textContent = 'Network error';
+        nameAvailable = false;
+      }
+      updateCreateBtn();
+    }
+
+    function updateCreateBtn() {
+      document.getElementById('btnCreate').disabled = !(nameAvailable && currentUser);
+    }
+
+    async function createRepo() {
+      const name = document.getElementById('repoName').value.trim();
+      const btn = document.getElementById('btnCreate');
+      const result = document.getElementById('result');
+
+      btn.disabled = true;
+      btn.classList.add('loading');
+      result.style.display = 'none';
+
+      try {
+        const res = await fetch('https://api.github.com/user/repos', {
+          method: 'POST',
+          headers: getHeaders(),
+          body: JSON.stringify({
+            name: name,
+            private: isPrivate,
+            auto_init: document.getElementById('addReadme').checked
+          })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.message || 'Failed to create repository');
+        }
+
+        result.className = 'result success';
+        result.innerHTML = `Repository created! <a href="${data.html_url}" target="_blank">${data.full_name}</a>`;
+        result.style.display = 'block';
+
+        // Save to history
+        const history = JSON.parse(localStorage.getItem('gh_repo_history') || '[]');
+        history.unshift({ name: data.full_name, url: data.html_url, time: new Date().toISOString() });
+        if (history.length > 10) history.pop();
+        localStorage.setItem('gh_repo_history', JSON.stringify(history));
+        renderHistory();
+
+        // Reset
+        document.getElementById('repoName').value = '';
+        nameAvailable = false;
+        document.getElementById('nameStatus').className = 'status idle';
+        document.getElementById('nameStatus').textContent = 'Type a name to check availability';
+
+      } catch (err) {
+        result.className = 'result error';
+        result.textContent = err.message;
+        result.style.display = 'block';
+      }
+
+      btn.classList.remove('loading');
+      updateCreateBtn();
+    }
+
+    function renderHistory() {
+      const history = JSON.parse(localStorage.getItem('gh_repo_history') || '[]');
+      const section = document.getElementById('historySection');
+      const list = document.getElementById('historyList');
+
+      if (history.length === 0) {
+        section.style.display = 'none';
+        return;
+      }
+
+      section.style.display = 'block';
+      list.innerHTML = history.map(item => {
+        const ago = timeAgo(new Date(item.time));
+        return `<div class="history-item">
+          <a href="${item.url}" target="_blank">${item.name}</a>
+          <span class="time">${ago}</span>
+        </div>`;
+      }).join('');
+    }
+
+    function timeAgo(date) {
+      const seconds = Math.floor((new Date() - date) / 1000);
+      if (seconds < 60) return 'just now';
+      const minutes = Math.floor(seconds / 60);
+      if (minutes < 60) return `${minutes}m ago`;
+      const hours = Math.floor(minutes / 60);
+      if (hours < 24) return `${hours}h ago`;
+      const days = Math.floor(hours / 24);
+      return `${days}d ago`;
+    }
+
+    // Enter key to create
+    document.getElementById('repoName').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !document.getElementById('btnCreate').disabled) {
+        createRepo();
+      }
+    });
+  </script>
+</body>
+</html>
