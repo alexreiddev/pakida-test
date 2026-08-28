@@ -16,7 +16,7 @@ import StaffPortal     from './pages/StaffPortal'
 
 export default function App() {
   const { player, loading: playerLoading, lookupByPhone, register, refreshPlayer, logout } = usePlayer()
-  const { config, loading: configLoading } = useAppConfig()
+  const { config } = useAppConfig()
 
   // Page routing
   const [page,     setPage]     = useState('home')
@@ -35,26 +35,6 @@ export default function App() {
     if (table) setSelectedTableId(parseInt(table))
   }, [])
 
-  // Restore active session on page refresh / return
-  useEffect(() => {
-    if (!player || activeSessionId) return
-    supabase
-      .from('session_players')
-      .select('session_id, sessions(id, table_id, status, start_time, session_players(*, players(*)))')
-      .eq('player_id', player.id)
-      .is('left_at', null)
-      .single()
-      .then(({ data }) => {
-        const sess = data?.sessions
-        if (sess && sess.status === 'active') {
-          setSelectedTableId(sess.table_id)
-          setActiveSessionId(sess.id)
-          setSessionPlayers(sess.session_players || [])
-          setPage('session')
-        }
-      })
-  }, [player])
-
   // Listen for staff-login navigation event from PhoneEntryPage
   useEffect(() => {
     const handler = (e) => {
@@ -63,6 +43,25 @@ export default function App() {
     window.addEventListener('goto', handler)
     return () => window.removeEventListener('goto', handler)
   }, [])
+
+  // Restore active session after page refresh
+  useEffect(() => {
+    if (!player?.id) return
+    async function restoreSession() {
+      const { data } = await supabase
+        .from('session_players')
+        .select('session_id, sessions(status, table_id, start_time)')
+        .eq('player_id', player.id)
+        .is('left_at', null)
+        .maybeSingle()
+      if (data?.sessions?.status === 'active') {
+        setActiveSessionId(data.session_id)
+        setSelectedTableId(data.sessions.table_id)
+        setPage('session')
+      }
+    }
+    restoreSession()
+  }, [player?.id])
 
   // Watch for billing-status sessions (staff approved end request)
   useEffect(() => {
@@ -179,7 +178,7 @@ export default function App() {
 
   // Staff portal
   if (page === 'staff') {
-    return <StaffPortal config={config} configLoading={configLoading} onBack={() => setPage('home')} />
+    return <StaffPortal config={config} onBack={() => setPage('home')} />
   }
 
   // Not logged in

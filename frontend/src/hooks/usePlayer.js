@@ -38,6 +38,10 @@ export function usePlayer() {
       .select('*')
       .eq('phone', phone)
       .single()
+    if (data) {
+      setPlayer(data)
+      localStorage.setItem(STORAGE_KEY, data.id)
+    }
     return data
   }
 
