@@ -112,8 +112,11 @@
       gap: 6px;
     }
 
+    .status a { color: #58a6ff; text-decoration: none; }
+    .status a:hover { text-decoration: underline; }
     .status.available { color: #3fb950; }
     .status.taken { color: #f85149; }
+    .status.exists { color: #d29922; }
     .status.checking { color: #8b949e; }
     .status.idle { color: #8b949e; }
 
@@ -163,12 +166,11 @@
       height: 16px;
     }
 
-    .btn-create {
+    .btn-create, .btn-deploy {
       width: 100%;
       padding: 12px;
       font-size: 16px;
       font-weight: 600;
-      background: #238636;
       color: #fff;
       border: 1px solid rgba(240, 246, 252, 0.1);
       border-radius: 8px;
@@ -176,21 +178,23 @@
       transition: background 0.2s;
     }
 
-    .btn-create:hover:not(:disabled) {
-      background: #2ea043;
-    }
+    .btn-create { background: #238636; }
+    .btn-create:hover:not(:disabled) { background: #2ea043; }
 
-    .btn-create:disabled {
+    .btn-deploy { background: #1f6feb; }
+    .btn-deploy:hover:not(:disabled) { background: #388bfd; }
+
+    .btn-create:disabled, .btn-deploy:disabled {
       opacity: 0.5;
       cursor: not-allowed;
     }
 
-    .btn-create.loading {
+    .btn-create.loading, .btn-deploy.loading {
       position: relative;
       color: transparent;
     }
 
-    .btn-create.loading::after {
+    .btn-create.loading::after, .btn-deploy.loading::after {
       content: '';
       position: absolute;
       width: 20px;
@@ -234,6 +238,18 @@
     }
 
     .result a:hover { text-decoration: underline; }
+
+    .result .pages-url {
+      display: block;
+      margin-top: 8px;
+      padding: 8px 12px;
+      background: rgba(88, 166, 255, 0.08);
+      border: 1px solid rgba(88, 166, 255, 0.2);
+      border-radius: 6px;
+      font-size: 13px;
+    }
+
+    .result .pages-url a { color: #58a6ff; }
 
     .setup-section {
       margin-bottom: 20px;
@@ -344,38 +360,35 @@
       line-height: 1.5;
     }
 
-    .pages-info.visible {
-      display: flex;
-    }
+    .pages-info.visible { display: flex; }
 
     .pages-info strong {
       color: #58a6ff;
       word-break: break-all;
     }
 
-    .pages-step {
+    .create-options.hidden { display: none; }
+
+    .existing-notice {
+      display: none;
+      padding: 12px 14px;
+      margin-bottom: 20px;
+      background: rgba(210, 153, 34, 0.06);
+      border: 1px solid rgba(210, 153, 34, 0.2);
+      border-radius: 8px;
       font-size: 13px;
-      color: #8b949e;
-      margin-top: 4px;
+      color: #d29922;
+      line-height: 1.5;
     }
 
-    .pages-step.active { color: #e6edf3; }
-    .pages-step.done { color: #3fb950; }
-    .pages-step.fail { color: #f85149; }
+    .existing-notice.visible { display: block; }
 
-    .result .pages-url {
-      display: block;
-      margin-top: 8px;
-      padding: 8px 12px;
-      background: rgba(88, 166, 255, 0.08);
-      border: 1px solid rgba(88, 166, 255, 0.2);
-      border-radius: 6px;
-      font-size: 13px;
-    }
-
-    .result .pages-url a {
+    .existing-notice a {
       color: #58a6ff;
+      text-decoration: none;
     }
+
+    .existing-notice a:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
@@ -423,27 +436,37 @@
         <div class="status idle" id="nameStatus">Type a name to check availability</div>
       </div>
 
-      <!-- Visibility -->
-      <div class="field">
-        <label>Visibility</label>
-        <div class="options">
-          <button class="option-btn active" id="btnPublic" onclick="setVisibility(false)">Public</button>
-          <button class="option-btn" id="btnPrivate" onclick="setVisibility(true)">Private</button>
+      <!-- Existing repo notice -->
+      <div class="existing-notice" id="existingNotice">
+        This repo already exists. You can enable GitHub Pages hosting on it.
+        <a id="existingRepoLink" href="#" target="_blank">View repo</a>
+      </div>
+
+      <!-- Create-only options (hidden when repo exists) -->
+      <div class="create-options" id="createOptions">
+        <!-- Visibility -->
+        <div class="field">
+          <label>Visibility</label>
+          <div class="options">
+            <button class="option-btn active" id="btnPublic" onclick="setVisibility(false)">Public</button>
+            <button class="option-btn" id="btnPrivate" onclick="setVisibility(true)">Private</button>
+          </div>
+        </div>
+
+        <!-- Init with README -->
+        <div class="checkbox-row">
+          <input type="checkbox" id="addReadme" checked>
+          <label for="addReadme" style="margin:0; cursor:pointer;">Initialize with a README</label>
+        </div>
+
+        <!-- GitHub Pages (for new repos) -->
+        <div class="checkbox-row">
+          <input type="checkbox" id="enablePages">
+          <label for="enablePages" style="margin:0; cursor:pointer;">Publish to GitHub Pages <span style="color:#8b949e">(from main branch)</span></label>
         </div>
       </div>
 
-      <!-- Init with README -->
-      <div class="checkbox-row">
-        <input type="checkbox" id="addReadme" checked>
-        <label for="addReadme" style="margin:0; cursor:pointer;">Initialize with a README</label>
-      </div>
-
-      <!-- GitHub Pages -->
-      <div class="checkbox-row">
-        <input type="checkbox" id="enablePages">
-        <label for="enablePages" style="margin:0; cursor:pointer;">Publish to GitHub Pages <span style="color:#8b949e">(from main branch)</span></label>
-      </div>
-
+      <!-- Pages URL preview -->
       <div class="pages-info" id="pagesInfo">
         <svg width="14" height="14" viewBox="0 0 16 16" fill="#58a6ff" style="flex-shrink:0; margin-top:1px;">
           <path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM6.5 7.75A.75.75 0 0 1 7.25 7h1a.75.75 0 0 1 .75.75v2.75h.25a.75.75 0 0 1 0 1.5h-2a.75.75 0 0 1 0-1.5h.25v-2h-.25a.75.75 0 0 1-.75-.75ZM8 6a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"/>
@@ -451,8 +474,11 @@
         <span>Your site will be live at <strong id="pagesUrlPreview">https://username.github.io/repo-name</strong></span>
       </div>
 
-      <!-- Create Button -->
+      <!-- Create Button (new repos) -->
       <button class="btn-create" id="btnCreate" onclick="createRepo()" disabled>Create Repository</button>
+
+      <!-- Deploy Button (existing repos) -->
+      <button class="btn-deploy" id="btnDeploy" onclick="deployPages()" style="display:none">Enable GitHub Pages</button>
 
       <!-- Result -->
       <div class="result" id="result"></div>
@@ -468,29 +494,21 @@
   <script>
     let isPrivate = false;
     let nameAvailable = false;
+    let repoExists = false;
     let checkTimeout = null;
     let currentUser = null;
 
-    // Init
     (function init() {
       const stored = localStorage.getItem('gh_token');
-      if (stored) {
-        verifyToken(stored);
-      }
+      if (stored) verifyToken(stored);
       renderHistory();
 
-      // Pages checkbox toggle
       document.getElementById('enablePages').addEventListener('change', function() {
-        const info = document.getElementById('pagesInfo');
-        info.classList.toggle('visible', this.checked);
-        // Auto-check README if Pages is enabled (Pages needs at least one file)
-        if (this.checked) {
-          document.getElementById('addReadme').checked = true;
-        }
+        document.getElementById('pagesInfo').classList.toggle('visible', this.checked);
+        if (this.checked) document.getElementById('addReadme').checked = true;
         updatePagesPreview();
       });
 
-      // Update Pages URL preview when name changes
       document.getElementById('repoName').addEventListener('input', updatePagesPreview);
     })();
 
@@ -529,7 +547,6 @@
         document.getElementById('tokenInput').style.display = 'none';
         document.getElementById('tokenConnected').style.display = 'block';
         updatePagesPreview();
-        // Re-check name if there's already text
         const name = document.getElementById('repoName').value.trim();
         if (name) checkName(name);
       } catch {
@@ -548,7 +565,8 @@
       document.getElementById('ownerName').textContent = 'you';
       currentUser = null;
       nameAvailable = false;
-      updateCreateBtn();
+      repoExists = false;
+      updateUI();
     }
 
     function setVisibility(priv) {
@@ -561,7 +579,8 @@
       const name = document.getElementById('repoName').value.trim();
       const status = document.getElementById('nameStatus');
       nameAvailable = false;
-      updateCreateBtn();
+      repoExists = false;
+      updateUI();
 
       if (checkTimeout) clearTimeout(checkTimeout);
 
@@ -584,7 +603,7 @@
       }
 
       status.className = 'status checking';
-      status.textContent = 'Checking availability...';
+      status.textContent = 'Checking...';
       checkTimeout = setTimeout(() => checkName(name), 400);
     }
 
@@ -594,16 +613,36 @@
         const res = await fetch(`https://api.github.com/repos/${currentUser}/${name}`, {
           headers: getHeaders()
         });
+
         if (res.status === 404) {
           nameAvailable = true;
+          repoExists = false;
           status.className = 'status available';
           status.innerHTML = '&#10003; Available';
         } else if (res.ok) {
+          const repoData = await res.json();
           nameAvailable = false;
-          status.className = 'status taken';
-          status.innerHTML = '&#10007; Already exists';
+          repoExists = true;
+          document.getElementById('existingRepoLink').href = repoData.html_url;
+
+          // Check if Pages is already enabled
+          const pagesRes = await fetch(`https://api.github.com/repos/${currentUser}/${name}/pages`, {
+            headers: getHeaders()
+          });
+
+          if (pagesRes.ok) {
+            const pagesData = await pagesRes.json();
+            const pUrl = pagesData.html_url || `https://${currentUser}.github.io/${name}`;
+            status.className = 'status exists';
+            status.innerHTML = `&#9679; Exists &mdash; Pages already live at <a href="${pUrl}" target="_blank">${currentUser}.github.io/${name}</a>`;
+            repoExists = false;
+          } else {
+            status.className = 'status exists';
+            status.innerHTML = '&#9679; Exists &mdash; Pages not enabled yet';
+          }
         } else {
           nameAvailable = false;
+          repoExists = false;
           status.className = 'status taken';
           status.textContent = 'Could not verify';
         }
@@ -611,12 +650,36 @@
         status.className = 'status taken';
         status.textContent = 'Network error';
         nameAvailable = false;
+        repoExists = false;
       }
-      updateCreateBtn();
+      updateUI();
     }
 
-    function updateCreateBtn() {
-      document.getElementById('btnCreate').disabled = !(nameAvailable && currentUser);
+    function updateUI() {
+      const createBtn = document.getElementById('btnCreate');
+      const deployBtn = document.getElementById('btnDeploy');
+      const createOptions = document.getElementById('createOptions');
+      const notice = document.getElementById('existingNotice');
+      const pagesInfo = document.getElementById('pagesInfo');
+
+      if (repoExists && currentUser) {
+        createBtn.style.display = 'none';
+        deployBtn.style.display = 'block';
+        deployBtn.disabled = false;
+        createOptions.classList.add('hidden');
+        notice.classList.add('visible');
+        pagesInfo.classList.add('visible');
+      } else {
+        createBtn.style.display = 'block';
+        deployBtn.style.display = 'none';
+        createOptions.classList.remove('hidden');
+        notice.classList.remove('visible');
+        createBtn.disabled = !(nameAvailable && currentUser);
+        if (!document.getElementById('enablePages').checked) {
+          pagesInfo.classList.remove('visible');
+        }
+      }
+      updatePagesPreview();
     }
 
     async function createRepo() {
@@ -631,7 +694,6 @@
       result.style.display = 'none';
 
       try {
-        // Step 1: Create the repo
         const res = await fetch('https://api.github.com/user/repos', {
           method: 'POST',
           headers: getHeaders(),
@@ -643,20 +705,15 @@
         });
 
         const data = await res.json();
-
-        if (!res.ok) {
-          throw new Error(data.message || 'Failed to create repository');
-        }
+        if (!res.ok) throw new Error(data.message || 'Failed to create repository');
 
         let pagesUrl = null;
 
-        // Step 2: Enable GitHub Pages if checked
         if (enablePages) {
           btn.textContent = 'Enabling Pages...';
-          pagesUrl = await enableGitHubPages(currentUser, name);
+          pagesUrl = await enableGitHubPages(currentUser, name, 1500);
         }
 
-        // Build result message
         let resultHtml = `Repository created! <a href="${data.html_url}" target="_blank">${data.full_name}</a>`;
 
         if (enablePages && pagesUrl) {
@@ -669,26 +726,13 @@
         result.innerHTML = resultHtml;
         result.style.display = 'block';
 
-        // Save to history
         const history = JSON.parse(localStorage.getItem('gh_repo_history') || '[]');
-        history.unshift({
-          name: data.full_name,
-          url: data.html_url,
-          pages: pagesUrl || null,
-          time: new Date().toISOString()
-        });
+        history.unshift({ name: data.full_name, url: data.html_url, pages: pagesUrl || null, time: new Date().toISOString() });
         if (history.length > 10) history.pop();
         localStorage.setItem('gh_repo_history', JSON.stringify(history));
         renderHistory();
 
-        // Reset
-        document.getElementById('repoName').value = '';
-        nameAvailable = false;
-        document.getElementById('nameStatus').className = 'status idle';
-        document.getElementById('nameStatus').textContent = 'Type a name to check availability';
-        document.getElementById('enablePages').checked = false;
-        document.getElementById('pagesInfo').classList.remove('visible');
-
+        resetForm();
       } catch (err) {
         result.className = 'result error';
         result.textContent = err.message;
@@ -697,12 +741,55 @@
 
       btn.classList.remove('loading');
       btn.textContent = 'Create Repository';
-      updateCreateBtn();
+      updateUI();
     }
 
-    async function enableGitHubPages(owner, repo) {
-      // Small delay to let GitHub finish initializing the repo
-      await new Promise(r => setTimeout(r, 1500));
+    async function deployPages() {
+      const name = document.getElementById('repoName').value.trim();
+      const btn = document.getElementById('btnDeploy');
+      const result = document.getElementById('result');
+
+      btn.disabled = true;
+      btn.classList.add('loading');
+      result.style.display = 'none';
+
+      try {
+        const pagesUrl = await enableGitHubPages(currentUser, name);
+
+        if (pagesUrl) {
+          result.className = 'result success';
+          result.innerHTML = `Pages enabled on <strong>${currentUser}/${name}</strong>!<div class="pages-url">GitHub Pages: <a href="${pagesUrl}" target="_blank">${pagesUrl}</a><br><span style="font-size:12px; color:#8b949e;">May take a minute to go live.</span></div>`;
+          result.style.display = 'block';
+
+          const history = JSON.parse(localStorage.getItem('gh_repo_history') || '[]');
+          history.unshift({
+            name: `${currentUser}/${name}`,
+            url: `https://github.com/${currentUser}/${name}`,
+            pages: pagesUrl,
+            time: new Date().toISOString()
+          });
+          if (history.length > 10) history.pop();
+          localStorage.setItem('gh_repo_history', JSON.stringify(history));
+          renderHistory();
+
+          resetForm();
+        } else {
+          result.className = 'result error';
+          result.textContent = 'Failed to enable Pages. Make sure the repo has at least one commit and your token has repo scope.';
+          result.style.display = 'block';
+        }
+      } catch (err) {
+        result.className = 'result error';
+        result.textContent = err.message;
+        result.style.display = 'block';
+      }
+
+      btn.classList.remove('loading');
+      btn.disabled = false;
+    }
+
+    async function enableGitHubPages(owner, repo, delay = 0) {
+      if (delay) await new Promise(r => setTimeout(r, delay));
 
       try {
         const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/pages`, {
@@ -710,31 +797,18 @@
           headers: getHeaders(),
           body: JSON.stringify({
             build_type: 'workflow',
-            source: {
-              branch: 'main',
-              path: '/'
-            }
+            source: { branch: 'main', path: '/' }
           })
         });
 
-        // If 409, Pages might already be enabled by default
-        if (res.status === 409) {
-          return `https://${owner}.github.io/${repo}`;
-        }
+        if (res.status === 409) return `https://${owner}.github.io/${repo}`;
 
         if (!res.ok) {
-          // Try legacy source-based approach
           const retryRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/pages`, {
             method: 'POST',
             headers: getHeaders(),
-            body: JSON.stringify({
-              source: {
-                branch: 'main',
-                path: '/'
-              }
-            })
+            body: JSON.stringify({ source: { branch: 'main', path: '/' } })
           });
-
           if (retryRes.ok) {
             const retryData = await retryRes.json();
             return retryData.html_url || `https://${owner}.github.io/${repo}`;
@@ -744,10 +818,20 @@
 
         const data = await res.json();
         return data.html_url || `https://${owner}.github.io/${repo}`;
-
       } catch {
         return null;
       }
+    }
+
+    function resetForm() {
+      document.getElementById('repoName').value = '';
+      nameAvailable = false;
+      repoExists = false;
+      document.getElementById('nameStatus').className = 'status idle';
+      document.getElementById('nameStatus').textContent = 'Type a name to check availability';
+      document.getElementById('enablePages').checked = false;
+      document.getElementById('pagesInfo').classList.remove('visible');
+      updateUI();
     }
 
     function renderHistory() {
@@ -784,9 +868,12 @@
       return `${days}d ago`;
     }
 
-    // Enter key to create
     document.getElementById('repoName').addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' && !document.getElementById('btnCreate').disabled) {
+      if (e.key !== 'Enter') return;
+      const deployBtn = document.getElementById('btnDeploy');
+      if (deployBtn.style.display !== 'none' && !deployBtn.disabled) {
+        deployPages();
+      } else if (!document.getElementById('btnCreate').disabled) {
         createRepo();
       }
     });
